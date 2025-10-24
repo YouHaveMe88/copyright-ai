@@ -5,48 +5,29 @@
   <title>AI News Rewriter & Summarizer</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link rel="stylesheet" href="/static/styles.css">
-  <!-- <style>
-    body {
-      font-family: "Inter", sans-serif;
-      background-color: #0f1117;
-      color: #e4e8f1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 0;
-      padding: 30px;
-    }
-    h1 { color: #00f5a0; letter-spacing: 1px; }
-    textarea, input, select, button {
-      background-color: #1a1d24;
-      color: #e4e8f1;
-      border: 1px solid #333;
-      border-radius: 8px;
-      padding: 10px;
-      width: 100%;
-      margin: 5px 0;
-      font-size: 15px;
-    }
-    button {
-      background-color: #00f5a0;
+  <style>
+    /* Tambahan gaya untuk tombol copy */
+    .copy-btn {
+      background-color: var(--accent);
       color: #000;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all .2s;
-    }
-    button:hover { background-color: #00c27a; }
-    .container { max-width: 800px; width: 100%; }
-    #result {
-      background: #14161c;
-      padding: 20px;
+      border: none;
+      padding: 8px 14px;
       border-radius: 8px;
-      margin-top: 20px;
-      line-height: 1.7;
+      cursor: pointer;
+      transition: all .2s ease;
+      font-weight: bold;
+      margin-top: 10px;
     }
-    #result p { margin-bottom: 12px; }
-    .mode-group { display: flex; gap: 10px; margin-top: 10px; }
-    .btn-group { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
-  </style> -->
+    .copy-btn:hover {
+      background-color: #00c27a;
+    }
+    #copyNotice {
+      color: var(--accent);
+      margin-top: 5px;
+      font-size: 0.9em;
+      display: none;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -73,40 +54,66 @@
       <button id="titleBtn">Generate Judul</button>
       <button id="hashtagBtn">Generate Tagar</button>
     </div>
+
     <label style="display:flex;align-items:center;gap:6px;margin-top:8px;">
-  <input type="checkbox" id="includeGlobal" checked>
-  Sertakan Tagar Global 🌍
-</label>
-<a href="/schedule" style="color:#00f5a0;font-weight:bold;text-decoration:none;">🔔 Lihat Jadwal FYP AI</a>
+      <input type="checkbox" id="includeGlobal" checked>
+      Sertakan Tagar Global 🌍
+    </label>
+
+    <a href="/schedule" style="color:#00f5a0;font-weight:bold;text-decoration:none;">🔔 Lihat Jadwal FYP AI</a>
+
     <div id="result"></div>
+    <button id="copyBtn" class="copy-btn" style="display:none;">📋 Copy Hasil</button>
+    <div id="copyNotice">✅ Teks berhasil disalin!</div>
   </div>
 
   <script>
+    // Tombol utama
     document.getElementById("hashtagBtn").onclick = () => {
-  const includeGlobal = document.getElementById("includeGlobal").checked;
-  sendRequest("generate_hashtags", includeGlobal);
-};
+      const includeGlobal = document.getElementById("includeGlobal").checked;
+      sendRequest("generate_hashtags", includeGlobal);
+    };
 
-async function sendRequest(action, includeGlobal = true) {
-  const url = document.getElementById("urlInput").value;
-  const text = document.getElementById("textInput").value;
-  const mode = document.getElementById("modeSelect").value;
+    async function sendRequest(action, includeGlobal = true) {
+      const url = document.getElementById("urlInput").value;
+      const text = document.getElementById("textInput").value;
+      const mode = document.getElementById("modeSelect").value;
 
-  document.getElementById("result").innerHTML = "<i>⏳ Memproses...</i>";
-  const res = await fetch("/process", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ url, text, mode, action, include_global: includeGlobal })
-  });
+      const resultBox = document.getElementById("result");
+      const copyBtn = document.getElementById("copyBtn");
+      const notice = document.getElementById("copyNotice");
 
-  const data = await res.json();
-  document.getElementById("result").innerHTML = data.result || data.error;
-}
+      resultBox.innerHTML = "<i>⏳ Memproses...</i>";
+      copyBtn.style.display = "none";
+      notice.style.display = "none";
 
+      const res = await fetch("/process", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ url, text, mode, action, include_global: includeGlobal })
+      });
+
+      const data = await res.json();
+      resultBox.innerHTML = data.result || data.error;
+
+      // Tampilkan tombol copy kalau ada hasil
+      if (data.result) {
+        copyBtn.style.display = "inline-block";
+      }
+    }
 
     document.getElementById("processBtn").onclick = () => sendRequest(document.getElementById("actionSelect").value);
     document.getElementById("titleBtn").onclick = () => sendRequest("generate_title");
     document.getElementById("hashtagBtn").onclick = () => sendRequest("generate_hashtags");
+
+    // Fungsi copy hasil
+    document.getElementById("copyBtn").onclick = async () => {
+      const resultText = document.getElementById("result").innerText;
+      await navigator.clipboard.writeText(resultText);
+      const notice = document.getElementById("copyNotice");
+      notice.style.display = "block";
+      setTimeout(() => (notice.style.display = "none"), 2000);
+    };
   </script>
 </body>
 </html>
