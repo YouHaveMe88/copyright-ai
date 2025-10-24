@@ -1,0 +1,63 @@
+:root {
+  --bg: #0f1117;
+  --card-bg: rgba(255,255,255,0.05);
+  --text-main: #e4e8f1;
+  --accent: #00f5a0;
+  --card-radius: 12px;
+  --transition: all 0.2s ease-in-out;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text-main);
+  font-family: "Inter", sans-serif;
+  margin: 0;
+  padding: 30px;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.card {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border-radius: var(--card-radius);
+  padding: 20px;
+  margin-top: 20px;
+}
+
+button {
+  background-color: var(--accent);
+  color: #000;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+button:hover {
+  background-color: #00c27a;
+}
+
+input, textarea, select {
+  background-color: #1a1d24;
+  color: var(--text-main);
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 10px;
+  width: 100%;
+  margin: 8px 0;
+}
+
+#result {
+  background: #14161c;
+  padding: 20px;
+  border-radius: var(--card-radius);
+  line-height: 1.7;
+}
+#result p { margin-bottom: 12px; }
+    .mode-group { display: flex; gap: 10px; margin-top: 10px; }
+    .btn-group { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Live Schedule - FYP & Trending</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <!-- Font modern -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0d1017;
+      --card: rgba(255, 255, 255, 0.05);
+      --text: #e7eef6;
+      --accent: #00f5a0;
+      --accent2: #7de8ff;
+      --muted: #9da8b9;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Inter", sans-serif;
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 1.8rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    #clock {
+      font-size: 1.2rem;
+      color: var(--accent2);
+      font-weight: 600;
+      margin-bottom: 30px;
+    }
+
+    #scheduleBox {
+      background: var(--card);
+      border-radius: 20px;
+      backdrop-filter: blur(12px);
+      padding: 30px 25px;
+      max-width: 800px;
+      width: 100%;
+      box-shadow: 0 0 40px rgba(0,0,0,0.3);
+      line-height: 1.7;
+      font-size: 1rem;
+      color: var(--text);
+      text-align: left;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Markdown beautify */
+    #scheduleBox h3, #scheduleBox h4 {
+      color: var(--accent2);
+      font-size: 1.2rem;
+      margin-top: 1.2em;
+      margin-bottom: 0.5em;
+    }
+
+    #scheduleBox strong {
+      color: var(--accent);
+    }
+
+    #scheduleBox p {
+      margin-bottom: 10px;
+    }
+
+    #scheduleBox li {
+    margin-bottom: 6px;
+    color: #cfd8e3;
+    }
+
+    #scheduleBox ul {
+    list-style-type: disc;
+    padding-left: 25px;
+    margin: 10px 0 20px;
+    }
+
+    footer {
+      margin-top: 35px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+
+<body>
+  <h1>🕒 Jadwal Upload Konten (AI Real-Time)</h1>
+  <div id="clock">Memuat waktu...</div>
+  <div id="scheduleBox">⏳ Memuat rekomendasi AI...</div>
+
+  <footer>© 2025 AI Content Planner — Realtime TikTok & Instagram Scheduler</footer>
+
+  <script>
+    // Tampilkan waktu realtime
+    function updateClock() {
+        const now = new Date();
+        const hari = now.toLocaleDateString("id-ID", { weekday: "long" });
+        const jam = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        document.getElementById("clock").textContent = `${hari} ${jam}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Ambil jadwal AI dari backend
+    async function updateSchedule() {
+        const res = await fetch("/get_schedule");
+        const data = await res.json();
+        const html = formatMarkdown(data.schedule);
+        document.getElementById("scheduleBox").innerHTML = html;
+    }
+
+    // Format markdown → HTML agar tampil rapi
+    function formatMarkdown(md) {
+        return md
+        // Heading
+        .replace(/^### (.*$)/gim, "<h3>$1</h3>")
+        .replace(/^## (.*$)/gim, "<h3>$1</h3>")
+        .replace(/^# (.*$)/gim, "<h2>$1</h2>")
+        // Bold & italic
+        .replace(/\*\*(.*?)\*\*/gim, "<strong>$1</strong>")
+        .replace(/\*(.*?)\*/gim, "<em>$1</em>")
+        // Bullet list (-)
+        .replace(/^- (.*$)/gim, "<li>$1</li>")
+        // Ganti dua newline jadi break
+        .replace(/\n\n/g, "<br><br>")
+        // Bungkus <li> dengan <ul> otomatis
+        .replace(/(<li>.*?<\/li>)/gims, "<ul>$1</ul>");
+    }
+
+    updateSchedule();
+    setInterval(updateSchedule, 3600000); // update tiap 1 jam
+  </script>
+</body>
+</html>

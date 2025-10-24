@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>AI News Rewriter & Summarizer</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="/static/styles.css">
+  <!-- <style>
+    body {
+      font-family: "Inter", sans-serif;
+      background-color: #0f1117;
+      color: #e4e8f1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 30px;
+    }
+    h1 { color: #00f5a0; letter-spacing: 1px; }
+    textarea, input, select, button {
+      background-color: #1a1d24;
+      color: #e4e8f1;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 10px;
+      width: 100%;
+      margin: 5px 0;
+      font-size: 15px;
+    }
+    button {
+      background-color: #00f5a0;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    button:hover { background-color: #00c27a; }
+    .container { max-width: 800px; width: 100%; }
+    #result {
+      background: #14161c;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+      line-height: 1.7;
+    }
+    #result p { margin-bottom: 12px; }
+    .mode-group { display: flex; gap: 10px; margin-top: 10px; }
+    .btn-group { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+  </style> -->
+</head>
+<body>
+  <div class="container">
+    <h1>📰 AI News Rewriter & Summarizer</h1>
+    <p>Masukkan URL atau teks berita untuk diringkas, ditulis ulang, dibuatkan judul, atau tagar.</p>
+
+    <input type="text" id="urlInput" placeholder="Masukkan URL berita (opsional)">
+    <textarea id="textInput" rows="7" placeholder="Atau tempelkan teks berita di sini..."></textarea>
+
+    <div class="mode-group">
+      <select id="actionSelect">
+        <option value="summarize">Ringkas Berita</option>
+        <option value="rewrite">Tulis Ulang (Anti-Copyright)</option>
+      </select>
+
+      <select id="modeSelect">
+        <option value="AI">Gunakan AI</option>
+        <option value="Lokal">Gunakan Mode Lokal</option>
+      </select>
+    </div>
+
+    <div class="btn-group">
+      <button id="processBtn">Proses</button>
+      <button id="titleBtn">Generate Judul</button>
+      <button id="hashtagBtn">Generate Tagar</button>
+    </div>
+    <label style="display:flex;align-items:center;gap:6px;margin-top:8px;">
+  <input type="checkbox" id="includeGlobal" checked>
+  Sertakan Tagar Global 🌍
+</label>
+<a href="/schedule" style="color:#00f5a0;font-weight:bold;text-decoration:none;">🔔 Lihat Jadwal FYP AI</a>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    document.getElementById("hashtagBtn").onclick = () => {
+  const includeGlobal = document.getElementById("includeGlobal").checked;
+  sendRequest("generate_hashtags", includeGlobal);
+};
+
+async function sendRequest(action, includeGlobal = true) {
+  const url = document.getElementById("urlInput").value;
+  const text = document.getElementById("textInput").value;
+  const mode = document.getElementById("modeSelect").value;
+
+  document.getElementById("result").innerHTML = "<i>⏳ Memproses...</i>";
+  const res = await fetch("/process", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ url, text, mode, action, include_global: includeGlobal })
+  });
+
+  const data = await res.json();
+  document.getElementById("result").innerHTML = data.result || data.error;
+}
+
+
+    document.getElementById("processBtn").onclick = () => sendRequest(document.getElementById("actionSelect").value);
+    document.getElementById("titleBtn").onclick = () => sendRequest("generate_title");
+    document.getElementById("hashtagBtn").onclick = () => sendRequest("generate_hashtags");
+  </script>
+</body>
+</html>
