@@ -1,4 +1,5 @@
 flask
 beautifulsoup4
-openai
+openai==0.28
+
 pytz
