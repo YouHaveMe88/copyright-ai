@@ -68,52 +68,77 @@
   </div>
 
   <script>
-    // Tombol utama
-    document.getElementById("hashtagBtn").onclick = () => {
-      const includeGlobal = document.getElementById("includeGlobal").checked;
-      sendRequest("generate_hashtags", includeGlobal);
-    };
+  // === 🔧 Formatter hasil AI agar rapi ===
+  function formatAIText(text) {
+    if (!text) return "";
+    return (
+      text
+        // ubah **bold**
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+        // ubah *italic*
+        .replace(/\*(.*?)\*/g, "<em>$1</em>")
+        // ubah list "-"
+        .replace(/^- (.*$)/gim, "<li>$1</li>")
+        // ubah dua newline jadi paragraf baru
+        .replace(/\n{2,}/g, "</p><p>")
+        // ubah satu newline jadi <br>
+        .replace(/\n/g, "<br>")
+        // bungkus list otomatis jadi ul
+        .replace(/(<li>[\s\S]*?<\/li>)/gim, "<ul>$1</ul>")
+    );
+  }
 
-    async function sendRequest(action, includeGlobal = true) {
-      const url = document.getElementById("urlInput").value;
-      const text = document.getElementById("textInput").value;
-      const mode = document.getElementById("modeSelect").value;
+  // === Tombol utama ===
+  document.getElementById("hashtagBtn").onclick = () => {
+    const includeGlobal = document.getElementById("includeGlobal").checked;
+    sendRequest("generate_hashtags", includeGlobal);
+  };
 
-      const resultBox = document.getElementById("result");
-      const copyBtn = document.getElementById("copyBtn");
-      const notice = document.getElementById("copyNotice");
+  async function sendRequest(action, includeGlobal = true) {
+    const url = document.getElementById("urlInput").value;
+    const text = document.getElementById("textInput").value;
+    const mode = document.getElementById("modeSelect").value;
 
-      resultBox.innerHTML = "<i>⏳ Memproses...</i>";
-      copyBtn.style.display = "none";
-      notice.style.display = "none";
+    const resultBox = document.getElementById("result");
+    const copyBtn = document.getElementById("copyBtn");
+    const notice = document.getElementById("copyNotice");
 
-      const res = await fetch("/process", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ url, text, mode, action, include_global: includeGlobal })
-      });
+    resultBox.innerHTML = "<i>⏳ Memproses...</i>";
+    copyBtn.style.display = "none";
+    notice.style.display = "none";
 
-      const data = await res.json();
-      resultBox.innerHTML = data.result || data.error;
+    const res = await fetch("/process", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url, text, mode, action, include_global: includeGlobal })
+    });
 
-      // Tampilkan tombol copy kalau ada hasil
-      if (data.result) {
-        copyBtn.style.display = "inline-block";
-      }
-    }
+    const data = await res.json();
+    const clean = data.result || data.error;
 
-    document.getElementById("processBtn").onclick = () => sendRequest(document.getElementById("actionSelect").value);
-    document.getElementById("titleBtn").onclick = () => sendRequest("generate_title");
-    document.getElementById("hashtagBtn").onclick = () => sendRequest("generate_hashtags");
+    // ✨ Format hasil agar tampil rapi
+    resultBox.innerHTML = `<div>${formatAIText(clean)}</div>`;
 
-    // Fungsi copy hasil
-    document.getElementById("copyBtn").onclick = async () => {
-      const resultText = document.getElementById("result").innerText;
-      await navigator.clipboard.writeText(resultText);
-      const notice = document.getElementById("copyNotice");
-      notice.style.display = "block";
-      setTimeout(() => (notice.style.display = "none"), 2000);
-    };
-  </script>
+    // tampilkan tombol copy bila ada hasil
+    if (data.result) copyBtn.style.display = "inline-block";
+  }
+
+  document.getElementById("processBtn").onclick = () =>
+    sendRequest(document.getElementById("actionSelect").value);
+  document.getElementById("titleBtn").onclick = () => sendRequest("generate_title");
+  document.getElementById("hashtagBtn").onclick = () => sendRequest("generate_hashtags");
+
+  // === Copy hasil tanpa HTML tag ===
+  document.getElementById("copyBtn").onclick = async () => {
+    const temp = document.createElement("div");
+    temp.innerHTML = document.getElementById("result").innerHTML;
+    const plain = temp.innerText.trim();
+    await navigator.clipboard.writeText(plain);
+
+    const notice = document.getElementById("copyNotice");
+    notice.style.display = "block";
+    setTimeout(() => (notice.style.display = "none"), 2000);
+  };
+</script>
 </body>
 </html>
